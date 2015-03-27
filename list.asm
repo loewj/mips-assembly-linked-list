@@ -1,26 +1,22 @@
 #  Linked structures in assembler       D. Hemmendinger  24 January 2009
 #  Linked structures in assembler       J. Rieffel 15 February 2011
+#  New, insert, and print               J. Loew
 # (removed dependance on in-line constant definitions)
 #  This program builds a heap as a singly-linked list of nodes that
 #  are then used to build a singly-linked list of numbers.
-#       mknodes: builds a linked list of free nodes from an
-#                 unstructured heap space.
-#       new:    (you complete it) returns a node from the free list
-#       insert: (you write) inserts an integer into a linked list, in order.
-#       print:  (you write) traverses a list and prints its contents neatly
 
 ## System calls
 PR_INT = 1
 PR_STR = 4
 
 ## Node structure
-NEXT     = 0                    ## offset to next pointer
-DATA     = 4                    ## offset to data
+NEXT     = 0    ## offset to next pointer
+DATA     = 4    ## offset to data
 DATASIZE = 4
 NODESIZE = 8    ##DATA + DATASIZE       bytes per node
 NUMNODES = 15
 HEAPSIZE = 120  ##NODESIZE*NUMNODES
-NIL      = 0                    ## for null pointer
+NIL      = 0    ## for null pointer
 
         .data
 input: .word 5, 4, 3, 2, 1 ## you add more numbers here  (no more than NUMNODES)
@@ -37,14 +33,15 @@ main:   addi $sp, $sp, -4
         sw $ra, 0($sp)
         li $s7, NIL             # global variable holding the NIL value
         la $a0, heap            # pass the heap address to mknodes
-        li $a1, HEAPSIZE	#      and its size
-        li $a2, NODESIZE 	#      and the size of a node
+        li $a1, HEAPSIZE	      # and its size
+        li $a2, NODESIZE 	      # and the size of a node
         jal mknodes
 
-	#initially our linked list will be empty (nil)
-	#lw, $a0, input
-	#li, $a1, nil
-	#move $a2, $v0  #presuming $v0 contains a pointer to free after mknodes is called
+	# initially our linked list will be empty (nil)
+	# lw, $a0, input
+	# li, $a1, nil
+	# move $a2, $v0  #presuming $v0 contains a pointer to free after mknodes is
+  # called
 
   la $s0, input
   la $s1, inp_end
@@ -54,7 +51,7 @@ main:   addi $sp, $sp, -4
   move $a2, $v0
   move $a1, $s7
 
-  jal insert             # try to insert the number 5
+  jal insert                   # try to insert the number 5
 
   ##=====================
 
@@ -96,6 +93,7 @@ done:   move $a0, $v0
 # $t1: pointer to previous block (will become next node)
 
 # $v0: points to the first free node in the heap
+
 mknodes:
         add $t0, $a0, $a1       # t0 starts by pointing to the last
         sub $t0, $t0, $a2       # node-sized block in the heap
@@ -126,7 +124,7 @@ isFree: move $v0, $a0           # $v0: new node address
 newdone:jr $ra
 
 
-#insert behaves as described in the lab text
+# insert behaves as described in the lab text
 # inputs:
 #	 $a0: should contain N
 #	 $a1: should contain a pointer to our linked list
@@ -134,7 +132,7 @@ newdone:jr $ra
 #
 # outputs:
 # 	$v0 should contain the new pointer to our linked list
-#	$v1 should contain the new pointer to free
+#	  $v1 should contain the new pointer to free
 
 insert: addi $sp, $sp, -8       # allocate space on the stack
         sw $ra, 0($sp)
