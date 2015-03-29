@@ -1,6 +1,6 @@
 #  Linked structures in assembler       D. Hemmendinger  24 January 2009
 #  Linked structures in assembler       J. Rieffel 15 February 2011
-#  New, insert, and print               J. Loew
+#  New, insert, and print               J. Loew March 2015
 # (removed dependance on in-line constant definitions)
 #  This program builds a heap as a singly-linked list of nodes that
 #  are then used to build a singly-linked list of numbers.
@@ -10,16 +10,16 @@ PR_INT = 1
 PR_STR = 4
 
 ## Node structure
-NEXT     = 0    ## offset to next pointer
-DATA     = 4    ## offset to data
+NEXT     = 0    # offset to next pointer
+DATA     = 4    # offset to data
 DATASIZE = 4
-NODESIZE = 8    ##DATA + DATASIZE       bytes per node
+NODESIZE = 8    # DATA + DATASIZE - bytes per node
 NUMNODES = 15
-HEAPSIZE = 120  ##NODESIZE*NUMNODES
-NIL      = 0    ## for null pointer
+HEAPSIZE = 120  # NODESIZE*NUMNODES
+NIL      = 0    # for null pointer
 
         .data
-input: .word 5, 4, 3, 2, 1 ## you add more numbers here  (no more than NUMNODES)
+input: .word 5, 4, 3, 2, 1 # you add more numbers here  (no more than NUMNODES)
 inp_end:
 INSIZE = 1 #(inp_end - input)/4    # number of input array elements
 
@@ -40,20 +40,21 @@ main:   addi $sp, $sp, -4
 	# initially our linked list will be empty (nil)
 	# lw, $a0, input
 	# li, $a1, nil
-	# move $a2, $v0  #presuming $v0 contains a pointer to free after mknodes is
+	# move $a2, $v0  presuming $v0 contains a pointer to free after mknodes is
   # called
 
   la $s0, input
   la $s1, inp_end
 
-  # load into $a0 the index of the array to insert
+  # load into $a0 the first index of the array for insertion
   lw $a0, 0($s0)
   move $a2, $v0
   move $a1, $s7
 
-  jal insert                   # try to insert the number 5
+  jal insert                   # try to insert the first value
 
   ##=====================
+  # Loop to try and insert all values in "input"
 
         add $s2, $0, 1         # initialize the counter
 loop:   sll $s3, $s2, 2
@@ -105,14 +106,16 @@ mkloop: sub $t1, $t0, $a2       # t1 points to previous node-sized block
         sw $s7, NEXT($t1)       # ground node (first block in heap)
         jr $ra
 
-# Removes a node from free (passed in via $a0), returning a pointer to the node in $v0,
+# Removes a node from free (passed in via $a0), returning a pointer to the node
+# in $v0,
 # and a pointer to the new free in $v1
 #  ( returns NIL if none available)
 # inputs:
 #    $a0: points to the first "free" node in the heap
 # outputs:
 #    $v0: the node we have "created" (pulled off the stack from free)
-#    $v1: the new value of free (we don't want to clobber $a0 when we change free, right? right?)
+#    $v1: the new value of free (we don't want to clobber $a0 when we change
+#         free, right? right?)
 
 new:    bne $a0, NIL, isFree    # check if
         move $v0, $s7           # $v0: NIl
@@ -158,7 +161,7 @@ while:  lw $t3, NEXT($t2)       # $t3: currptr.next
         j while                 # loop
 ewhile: lw $t5, NEXT($t2)       # $t5: curptr.next
         sw $t5, NEXT($t0)       # $t6: currptr.next
-        sw $t0, NEXT($t2)          # tmp.next = currptr.next
+        sw $t0, NEXT($t2)       # tmp.next = currptr.next
 insdone:move $v0, $a1           # return the LL
         lw $ra, 0($sp)          # pop ra off stack
         addi $sp, $sp, 8        # restore stack to state
